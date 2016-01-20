@@ -1,0 +1,35 @@
+{
+  "name": "DwUrlRanking",
+  "plural": "dwUrlRankings",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "options": {
+    "validateUpsert": true
+  },
+  "properties": {
+    "value": {
+      "type": "Array",
+      "required": true
+    },
+    "dwTrailUrlId": {
+      "type": "string",
+      "required": true
+    },
+    "ranker": {
+      "type": "string",
+      "required": true
+    },
+    "requester": {
+      "type": "string",
+      "required": true
+    },
+    "created":{
+      "type": "date",
+      "defaultFn": "now"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": {}
+}
