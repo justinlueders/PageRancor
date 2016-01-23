@@ -1,0 +1,19 @@
+hr(style="margin-top: 50px;")
+.footer(style="text-align: center;")
+  p
+    script.
+      var d = new Date();
+      document.write(d.getFullYear());
+
+      //- Load Scripts
+script(src='//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js')
+script(src='//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js')
+
+script(src='bower_components/angular/angular.js')
+script(src='bower_components/angular-resource/angular-resource.js')
+
+script(src='/modules/js/app.js')
+script(src='/modules/js/lb-services.js')
+
+script(src='/modules/core/app.core.js')
+script(src='/modules/core/controllers/navigation.ctrl.js')

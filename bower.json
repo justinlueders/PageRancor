@@ -1,0 +1,16 @@
+{
+  "name": "PageRancor",
+  "description": "RAWWRRR",
+  "main": "server/server.js",
+  "authors": [
+    "Justin <justin.lueders@gmail.com>"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/justinlueders/PageRancor",
+  "private": true,
+  "dependencies": {
+    "vis": "~4.12.0",
+    "angular": "~1.4.9",
+    "angular-resource": "~1.4.9"
+  }
+}

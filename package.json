@@ -1,5 +1,5 @@
 {
-  "name": "sample_extractor",
+  "name": "Rancor",
   "version": "1.0.0",
   "main": "server/server.js",
   "scripts": {
@@ -10,10 +10,10 @@
     "compression": "^1.0.3",
     "cors": "^2.5.2",
     "jade": "^1.11.0",
-    "loopback": "^2.22.0",
-    "loopback-boot": "^2.6.5",
+    "loopback": "^2.26.2",
+    "loopback-boot": "^2.16.0",
     "loopback-component-explorer": "^2.1.0",
-    "loopback-datasource-juggler": "^2.39.0",
+    "loopback-datasource-juggler": "^2.44.0",
     "mkdirp": "^0.5.1",
     "multiparty": "^4.1.2",
     "request": "^2.67.0",

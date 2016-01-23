@@ -8,7 +8,7 @@
   },
   "properties": {
     "value": {
-      "type": "Array",
+      "type": "array",
       "required": true
     },
     "dwTrailUrlId": {
