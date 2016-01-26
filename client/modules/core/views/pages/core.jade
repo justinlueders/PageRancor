@@ -2,11 +2,17 @@ extends /modules/core/views/layouts/layout
 block content
    .row
       .col-md-6.col-md-offset-3
-         form(role='form', action='/api/rank/process', method='post')
+         form(role='form', action='/api/rank/look_ahead', method='post')
             .form-group
                label(for='urlRankRequest')
-               input#username.form-control(type='text', name='urlRankRequest', value='{             "dwTrailUrlId":"testId",             "requester":"jabba",             "urls":["https://en.wikipedia.org/wiki/Batman","http://www.theatlantic.com/entertainment/archive/2014/05/batmans-traumatic-origins/361638/",                 "http://www.scientificamerican.com/article/dark-knight-shift-why-bat/"],               "terms":["batman","joker","dark knight","Bhutanese","Neal Adams"]           }')
+               input#username.form-control(type='text', name='urlRankRequest', value='{"dwTrailUrlId":"testId","requester":"jabba","urls":["http://www.dccomics.com/characters/batman"],"terms":["batman","joker"]           }')
             button.btn.btn-default(type='submit') Submit
          br
-         rank-chart(style="width: 600px; height: 600px; border: 1px solid lightgray;")
 
+         div(style="width:600px; height:500px")
+            rank-chart(style="width: 600px; height: 500px; border: 1px solid lightgray;")
+            pre(id="eventSpan")
+            button.btn.btn-default Refresh
+            form(role='form', action='/api/rank/destroy', method='get')
+               button.btn.btn-default(type='submit') Destroy all data
+            br

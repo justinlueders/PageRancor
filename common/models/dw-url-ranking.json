@@ -7,9 +7,13 @@
     "validateUpsert": true
   },
   "properties": {
-    "value": {
+    "nodes": {
       "type": "array",
-      "required": true
+      "required": false
+    },
+    "edges": {
+      "type": "array",
+      "required": false
     },
     "dwTrailUrlId": {
       "type": "string",

@@ -2,8 +2,9 @@ var loopback = require('loopback');
 var boot = require('loopback-boot');
 var bodyParser = require('body-parser');
 var app = module.exports = loopback();
-var path = require('path');
 
+var path = require('path');
+app.use(loopback.static(path.resolve(__dirname, '../client')));
 // to support JSON-encoded bodies
 app.middleware('parse', bodyParser.json());
 // to support URL-encoded bodies
@@ -28,12 +29,6 @@ app.start = function() {
 // Sub-apps like REST API are mounted via boot scripts.
 boot(app, __dirname, function(err) {
   if (err) throw err;
-
-  var staticPath = path.resolve(__dirname, '../client/');
-
-  app.use(loopback.static(staticPath));
-  app.use(loopback.urlNotFound());
-  app.use(loopback.errorHandler());
 
   // start the server if `$ node server.js`
   if (require.main === module)
