@@ -3,11 +3,16 @@ angular.module('com.module.core')
         return {
             templateUrl: '/modules/core/views/partials/rank-chart',
             restrict: 'E',
-            link: function postLink(scope, element) {
+            link: function postLink($scope, element) {
                 element.text('this is the adminForm directive');
 
                 var network = null;
                 var data = null;
+
+                $scope.requester = "jabba";
+                $scope.load= function() {
+                    draw();
+                };
 
                 function destroy() {
                     if (network !== null) {
@@ -21,7 +26,7 @@ angular.module('com.module.core')
                     var whereClause={
                         filter: {
                             where: {
-                                requester: 'jabba'
+                                requester: $scope.requester
                             },
                             fields: {
                                 "dwTrailUrlId": true,
@@ -44,6 +49,10 @@ angular.module('com.module.core')
                             }
                         };
                         var options = {
+                            layout: {
+                                randomSeed: undefined,
+                                improvedLayout: false
+                            },
                             nodes: {
                                 shape: 'dot',
                                 scaling: {

@@ -4,15 +4,19 @@ block content
       .col-md-6.col-md-offset-3
          form(role='form', action='/api/rank/look_ahead', method='post')
             .form-group
-               label(for='urlRankRequest')
-               input#username.form-control(type='text', name='urlRankRequest', value='{"dwTrailUrlId":"testId","requester":"jabba","urls":["http://www.dccomics.com/characters/batman"],"terms":["batman","joker"]           }')
+               label(for='TrailId') Trail Id
+               input#TrailId.form-control(type='text', name='dwTrailUrlId', value='myTrail')
+               label(for='Username') Username
+               input#Username.form-control(type='text', name='requester', ng-model="requester")
+               label(for='Urls') Urls
+               input#Urls.form-control(type='text', name='urls', placeholder='Enter Url')
+               label(for='Terms') Terms
+               input#Terms.form-control(type='text', name='terms', placeholder='Enter comma separated terms')
             button.btn.btn-default(type='submit') Submit
+         button(ng-click="load()").btn.btn-default Load
          br
-
          div(style="width:600px; height:500px")
             rank-chart(style="width: 600px; height: 500px; border: 1px solid lightgray;")
             pre(id="eventSpan")
-            button.btn.btn-default Refresh
             form(role='form', action='/api/rank/destroy', method='get')
                button.btn.btn-default(type='submit') Destroy all data
-            br

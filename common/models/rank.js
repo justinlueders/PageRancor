@@ -187,7 +187,15 @@ module.exports = function(Rank) {
     Rank.processLookAhead = function(req,res, cb) {
         console.log("Rancor says: RAAWWWRRRR (got some data)");
         try {
-            var data =req.body.urlRankRequest;
+            var data =req.body;
+            data.urls = data.urls.split(',');
+            data.terms = data.terms.split(',');
+
+            if(!data||data.urls[0]==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
+                res.status(404).send("error: missing input, please fill out the entire form.")
+                return;
+            }
+
             if(typeof data == 'string'){
                 data = JSON.parse(data);
             }
