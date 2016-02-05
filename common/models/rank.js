@@ -81,9 +81,11 @@ module.exports = function(Rank) {
 
             Rank.processUrl(url,data.terms).then(function(node){
                 console.log('processing Url ' + url);
-                if(!node || node.score<=0){
-                    resolve(true);
-                    return;
+                if(parentUrlIndex != null){
+                    if(!node || node.score<=0){
+                        resolve(true);
+                        return;
+                    }
                 }
                 var nodeIndex = nodes.push(node) -1;
                 node.id=nodeIndex;
@@ -98,7 +100,7 @@ module.exports = function(Rank) {
 
                 Rank.createOrUpdateRanking("Rancor!",nodes,data.dwTrailUrlId,data.requester,edges);
 
-                if(depth <=0 || !url){
+                if(depth <0 || !url){
                     resolve(true);
                     return;
                 }
@@ -201,7 +203,7 @@ module.exports = function(Rank) {
             }
             var nodes = [];
             var edges = [];
-            Promise.all(data.urls.map(function(url){return Rank.processTree(null,url,data,2,nodes,edges)})).then(function(result){
+            Promise.all(data.urls.map(function(url){return Rank.processTree(null,url,data,1,nodes,edges)})).then(function(result){
                 console.log("finished");
             });
         }

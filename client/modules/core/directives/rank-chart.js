@@ -10,6 +10,8 @@ angular.module('com.module.core')
                 var data = null;
 
                 $scope.requester = "jabba";
+                $scope.defaultUrl = "http://localhost:3004/testsite";
+                $scope.defaultTerms = "batman,robin";
                 $scope.load= function() {
                     draw();
                 };

@@ -9,9 +9,9 @@ block content
                label(for='Username') Username
                input#Username.form-control(type='text', name='requester', ng-model="requester")
                label(for='Urls') Urls
-               input#Urls.form-control(type='text', name='urls', placeholder='Enter Url')
+               input#Urls.form-control(type='text', name='urls', placeholder='Enter Url', ng-model='defaultUrl')
                label(for='Terms') Terms
-               input#Terms.form-control(type='text', name='terms', placeholder='Enter comma separated terms')
+               input#Terms.form-control(type='text', name='terms', placeholder='Enter comma separated terms' ng-model='defaultTerms')
             button.btn.btn-default(type='submit') Submit
          button(ng-click="load()").btn.btn-default Load
          br
