@@ -1,9 +1,7 @@
 {
   "db": {
-    "host": "localhost",
-    "port": 27017,
-    "database": "rancor",
-    "name": "db",
-    "connector": "mongodb"
+    "name": "db-mem",
+    "connector": "mem",
+    "file": "db.json" 
   }
 }
