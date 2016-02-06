@@ -33,7 +33,7 @@
     "public": false
   },
   "rank": {
-    "dataSource": null,
+    "dataSource": "db",
     "public": true
   },
   "DwUrlRanking": {
