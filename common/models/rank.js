@@ -194,7 +194,7 @@ module.exports = function(Rank) {
             data.terms = data.terms.split(',');
 
             if(!data||data.urls[0]==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
-                res.status(404).send("error: missing input, please fill out the entire form.")
+                cb(null,"error: missing input, please fill out the entire form.");
                 return;
             }
 
@@ -206,13 +206,16 @@ module.exports = function(Rank) {
             Promise.all(data.urls.map(function(url){return Rank.processTree(null,url,data,1,nodes,edges)})).then(function(result){
                 console.log("finished");
             });
+
+            cb(null,"success");
+            return;
         }
         catch (getError) {
             console.log("Rancor failed to ranc!");
             console.log(getError);
-            res.status(500).send(getError.message);
+            cb(null,getError.message);
         }
-        res.status(200).send("Rancor says: nom nom nom (chewing on data)");
+        cb(null,"Rancor says: nom nom nom (chewing on data)");
     };
 
     Rank.remoteMethod(

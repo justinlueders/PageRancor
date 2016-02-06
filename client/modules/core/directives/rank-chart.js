@@ -1,5 +1,5 @@
 angular.module('com.module.core')
-    .directive('rankChart', ['DwUrlRanking',function(DwUrlRanking) {
+    .directive('rankChart', ['DwUrlRanking','$http',function(DwUrlRanking,$http) {
         return {
             templateUrl: '/modules/core/views/partials/rank-chart',
             restrict: 'E',
@@ -9,11 +9,23 @@ angular.module('com.module.core')
                 var network = null;
                 var data = null;
 
-                $scope.requester = "jabba";
-                $scope.defaultUrl = "http://localhost:3004/testsite";
-                $scope.defaultTerms = "batman,robin";
+                $scope.request_model = {
+                    dwTrailUrlId:"myTrail",
+                    requester:"jabba",
+                    urls:"http://localhost:3004/testsite",
+                    terms:"batman,robin"
+                };
+
+
                 $scope.load= function() {
                     draw();
+                };
+
+                $scope.submit = function(){
+
+                    $http.post("/api/rank/look_ahead", $scope.request_model).success(function(data, status) {
+                        console.log(data);
+                    })
                 };
 
                 function destroy() {
