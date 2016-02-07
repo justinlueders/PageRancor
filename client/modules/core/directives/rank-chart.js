@@ -40,7 +40,7 @@ angular.module('com.module.core')
                     var whereClause={
                         filter: {
                             where: {
-                                requester: $scope.requester
+                                requester: $scope.request_model.requester
                             },
                             fields: {
                                 "dwTrailUrlId": true,

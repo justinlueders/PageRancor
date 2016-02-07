@@ -72,6 +72,8 @@ module.exports = function(Rank) {
                 } else break;
             }
             resolve(n);
+        }).catch(function(reason){
+            console.log(JSON.stringify(reason));
         })
     };
 
@@ -100,43 +102,70 @@ module.exports = function(Rank) {
 
                 Rank.createOrUpdateRanking("Rancor!",nodes,data.dwTrailUrlId,data.requester,edges);
 
-                if(depth <0 || !url){
+                if(depth <=0 || !url){
+                    resolve(true);
+                    return;
+                }
+                try{
+                    x(url, 'body', ['a@href'])(function (err, hrefs) {
+                        if(!hrefs){
+                            resolve(true);
+                            return;
+                        }
+                        Promise.all(hrefs.map(function (href) {
+                            if(!href){
+                                return;
+                            }
+                            return Rank.processTree(nodeIndex, href, data, depth-1, nodes, edges).then(function (result) {
+                                resolve(result);
+                            }).catch(function(reason){
+                                console.log(JSON.stringify(reason));
+                            })
+                        }));
+                    });
+                }
+                catch (getError) {
+                    console.log(getError);
                     resolve(true);
                     return;
                 }
 
-                x(url, 'body', ['a@href'])(function (err, hrefs) {
-                    if(!hrefs){
-                        resolve(true);
-                        return;
-                    }
-                    Promise.all(hrefs.map(function (href) {
-                        if(!href){
-                            return;
-                        }
-                        return Rank.processTree(nodeIndex, href, data, depth-1, nodes, edges).then(function (result) {
-                            resolve(result);
-                        }).catch(console.log.bind(console));
-                    }));
-                });
-            }).catch(console.log.bind(console));
+            }).catch(function(reason){
+                console.log(JSON.stringify(reason));
+            })
+        }).catch(function(reason){
+            console.log(JSON.stringify(reason));
         })
     };
 
     Rank.processUrl = function(url, terms){
         return new Promise(function(resolve){
-            x(url, 'body@html')(function(err, body){
-                //score the body
-                if(!body){
+            try{
+                if(url.indexOf("mailto") >=0){
                     resolve(null);
                     return;
                 }
-                console.log("scoring " + url);
-                Rank.scoreBody(url,body,terms).then(function(node){
-                    resolve(node);
-                }).catch(console.log.bind(console));
-            })
+                x(url, 'body@html')(function(err, body){
+                    //score the body
+                    if(!body){
+                        resolve(null);
+                        return;
+                    }
+                    console.log("scoring " + url);
+                    Rank.scoreBody(url,body,terms).then(function(node){
+                        resolve(node);
+                    }).catch(function(reason){
+                        console.log(JSON.stringify(reason));
+                    })
+                })
+            }
+            catch (getError) {
+                console.log(getError);
+            }
 
+        }).catch(function(reason){
+            console.log(JSON.stringify(reason));
+            resolve(null);
         })
     };
 
@@ -151,7 +180,11 @@ module.exports = function(Rank) {
               var score = result.reduce(function(pv, cv) { return pv + cv; }, 0 );
               console.log(url + " scored " + score.toString());
               resolve({"url":url,"score":score});
-          }).catch(console.log.bind(console));
+          }).catch(function(reason){
+              console.log(JSON.stringify(reason));
+          })
+      }).catch(function(reason){
+          console.log(JSON.stringify(reason));
       })
     };
 
@@ -164,7 +197,9 @@ module.exports = function(Rank) {
             }
           Promise.all(data.urls.map(function(url){return Rank.processUrl(url,data.terms)})).then(function(result){
               Rank.createOrUpdateRanking("Rancor!",result,data.dwTrailUrlId,data.requester);
-          }).catch(console.log.bind(console));
+          }).catch(function(reason){
+              console.log(JSON.stringify(reason));
+          })
         }
         catch (getError) {
           console.log("Rancor failed to ranc!");
