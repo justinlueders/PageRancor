@@ -30,6 +30,10 @@
     "created":{
       "type": "date",
       "defaultFn": "now"
+    },
+    "finished":{
+      "type": "boolean",
+      "default": false
     }
   },
   "validations": [],

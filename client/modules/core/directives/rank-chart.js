@@ -23,7 +23,7 @@ angular.module('com.module.core')
 
                 $scope.submit = function(){
 
-                    $http.post("/api/rank/look_ahead", $scope.request_model).success(function(data, status) {
+                    $http.post("/api/rank/process", $scope.request_model).success(function(data, status) {
                         console.log(data);
                     })
                 };
@@ -47,7 +47,8 @@ angular.module('com.module.core')
                                 "extractor": true,
                                 "value": true,
                                 "nodes": true,
-                                "edges": true
+                                "edges": true,
+                                "finished": true
                             }
                         }
                     };

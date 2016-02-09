@@ -13,7 +13,7 @@ mkdirp(path.join(__dirname, relativeUploadPath), function (err) {
 });
 
 module.exports = function(Rank) {
-    Rank.createOrUpdateRanking = function(name,nodes,dwTrailUrlId,requester, edges){
+    Rank.createOrUpdateRanking = function(name,nodes,dwTrailUrlId,requester, edges,finished){
         console.log("Creating rank!");
         var dwUrlRanking = app.models.DwUrlRanking;
 
@@ -34,7 +34,8 @@ module.exports = function(Rank) {
                     "dwTrailUrlId": dwTrailUrlId,
                     "ranker": name,
                     "requester": requester,
-                    "edges": edges
+                    "edges": edges,
+                    "finished":finished
                 });
                 return;
             }
@@ -45,7 +46,8 @@ module.exports = function(Rank) {
                 "dwTrailUrlId": dwTrailUrlId,
                 "ranker": name,
                 "requester": requester,
-                "edges": edges
+                "edges": edges,
+                "finished":finished
             });
 
         });
@@ -77,57 +79,70 @@ module.exports = function(Rank) {
         })
     };
 
-    Rank.processTree = function(parentUrlIndex, url, data, depth, nodes, edges){
-        console.log("process tree for " + url);
-        return new Promise(function(resolve){
-
+    Rank.processSingle = function(data){
+        var nodes = [];
+        var edges = [];
+        var url = data.urls;
+        console.log("process Single for " + url);
+        return new Promise(function(resolve,reject){
             Rank.processUrl(url,data.terms).then(function(node){
                 console.log('processing Url ' + url);
-                if(parentUrlIndex != null){
-                    if(!node || node.score<=0){
-                        resolve(true);
-                        return;
-                    }
-                }
                 var nodeIndex = nodes.push(node) -1;
                 node.id=nodeIndex;
                 node.label = node.score;
                 node.value = node.score;
-                if(parentUrlIndex != null && parentUrlIndex!=undefined){
-                    if(parentUrlIndex >0){
-                        console.log("parent index = " + parentUrlIndex);
-                    }
-                    edges.push({'from':parentUrlIndex,'to':nodeIndex});
-                }
+                var processedUrls = [];
+                processedUrls.push(url);
 
-                Rank.createOrUpdateRanking("Rancor!",nodes,data.dwTrailUrlId,data.requester,edges);
+                Rank.createOrUpdateRanking("Rancor!",nodes,data.dwTrailUrlId,data.requester,edges,false);
 
-                if(depth <=0 || !url){
-                    resolve(true);
-                    return;
-                }
-                try{
+                try {
                     x(url, 'body', ['a@href'])(function (err, hrefs) {
-                        if(!hrefs){
-                            resolve(true);
+                        if (!hrefs) {
+                            reject("No other urls found.");
                             return;
                         }
                         Promise.all(hrefs.map(function (href) {
-                            if(!href){
-                                return;
-                            }
-                            return Rank.processTree(nodeIndex, href, data, depth-1, nodes, edges).then(function (result) {
-                                resolve(result);
-                            }).catch(function(reason){
-                                console.log(JSON.stringify(reason));
-                            })
-                        }));
+                            return new Promise(function (resolve) {
+                                if (processedUrls.indexOf(href) != -1) {
+                                    console.log("ignoring duplicate url");
+                                    resolve(false);
+                                    return;
+                                }
+                                processedUrls.push(href);
+                                Rank.processUrl(href, data.terms).then(function (childNode) {
+                                    console.log('processing Url ' + href);
+                                    if (!childNode || childNode.score <= 0) {
+                                        resolve(false);
+                                        return;
+                                    }
+                                    var childIndex = nodes.push(childNode) - 1;
+                                    childNode.id = childIndex;
+                                    childNode.label = childNode.score;
+                                    childNode.value = childNode.score;
+                                    edges.push({'from': 0, 'to': childIndex});
+
+                                    Rank.createOrUpdateRanking("Rancor!", nodes, data.dwTrailUrlId, data.requester, edges, false);
+                                    resolve(true);
+                                }).catch(function (reason) {
+                                    console.log(JSON.stringify(reason));
+                                    resolve(false);
+                                });
+                            });
+
+                        })).then(function () {
+                            Rank.createOrUpdateRanking("Rancor!", nodes, data.dwTrailUrlId, data.requester, edges, true);
+                            resolve("processing finished cleanly!");
+                        }).catch(function (reason) {
+                            Rank.createOrUpdateRanking("Rancor!", nodes, data.dwTrailUrlId, data.requester, edges, true);
+                            console.log(JSON.stringify(reason));
+                            resolve("processing finished with an error!");
+                        });
                     });
                 }
-                catch (getError) {
-                    console.log(getError);
-                    resolve(true);
-                    return;
+                catch(error){
+                    console.log(JSON.stringify(error));
+                    resolve("processing finished with an x-ray error!");
                 }
 
             }).catch(function(reason){
@@ -191,41 +206,7 @@ module.exports = function(Rank) {
     Rank.processPost = function(req,res, cb) {
         console.log("Rancor says: RAAWWWRRRR (got some data)");
         try {
-          var data =req.body.urlRankRequest;
-            if(typeof data == 'string'){
-                data = JSON.parse(data);
-            }
-          Promise.all(data.urls.map(function(url){return Rank.processUrl(url,data.terms)})).then(function(result){
-              Rank.createOrUpdateRanking("Rancor!",result,data.dwTrailUrlId,data.requester);
-          }).catch(function(reason){
-              console.log(JSON.stringify(reason));
-          })
-        }
-        catch (getError) {
-          console.log("Rancor failed to ranc!");
-          console.log(getError);
-          res.status(500).send(getError.message);
-        }
-        res.status(200).send("Rancor says: nom nom nom (chewing on data)");
-    };
-
-    Rank.remoteMethod(
-        'processPost',
-        {
-          accepts: [
-            {arg: 'req', type: 'object', 'http': {source: 'req'}},
-            {arg: 'res', type: 'object', 'http': {source: 'res'}}
-          ],
-          returns: {arg: 'data', root:true},
-          http: {path: '/process',verb: 'post'}
-        }
-    );
-
-    Rank.processLookAhead = function(req,res, cb) {
-        console.log("Rancor says: RAAWWWRRRR (got some data)");
-        try {
             var data =req.body;
-            data.urls = data.urls.split(',');
             data.terms = data.terms.split(',');
 
             if(!data||data.urls[0]==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
@@ -236,10 +217,9 @@ module.exports = function(Rank) {
             if(typeof data == 'string'){
                 data = JSON.parse(data);
             }
-            var nodes = [];
-            var edges = [];
-            Promise.all(data.urls.map(function(url){return Rank.processTree(null,url,data,1,nodes,edges)})).then(function(result){
-                console.log("finished");
+
+            Rank.processSingle(data).then(function(result){
+                console.log(result);
             });
 
             cb(null,"success");
@@ -254,14 +234,14 @@ module.exports = function(Rank) {
     };
 
     Rank.remoteMethod(
-        'processLookAhead',
+        'processPost',
         {
-            accepts: [
-                {arg: 'req', type: 'object', 'http': {source: 'req'}},
-                {arg: 'res', type: 'object', 'http': {source: 'res'}}
-            ],
-            returns: {arg: 'data', root:true},
-            http: {path: '/look_ahead',verb: 'post'}
+          accepts: [
+            {arg: 'req', type: 'object', 'http': {source: 'req'}},
+            {arg: 'res', type: 'object', 'http': {source: 'res'}}
+          ],
+          returns: {arg: 'data', root:true},
+          http: {path: '/process',verb: 'post'}
         }
     );
 
