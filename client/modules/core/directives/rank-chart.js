@@ -37,32 +37,8 @@ angular.module('com.module.core')
 
                 function draw() {
                     destroy();
-                    var whereClause={
-                        filter: {
-                            where: {
-                                requester: $scope.request_model.requester
-                            },
-                            fields: {
-                                "dwTrailUrlId": true,
-                                "extractor": true,
-                                "value": true,
-                                "nodes": true,
-                                "edges": true,
-                                "finished": true
-                            }
-                        }
-                    };
-
-                    DwUrlRanking.findOne(whereClause,function(result){
-                        data = {nodes: result.nodes, edges: result.edges};
-                        var directionInput = "LR";
-                        var options = {
-                            layout: {
-                                hierarchical: {
-                                    direction: directionInput
-                                }
-                            }
-                        };
+                    $http.get("/api/rank/process",{params:$scope.request_model}).success(function(result) {
+                        data = {nodes: result[0].nodes, edges: result[0].edges};
                         var options = {
                             layout: {
                                 randomSeed: undefined,
@@ -90,9 +66,8 @@ angular.module('com.module.core')
                             document.getElementById('eventSpan').innerHTML = '<h2>Selected Node: </h2> <a href="' + data.nodes[params.nodes[0]].url + '">' +
                                 data.nodes[params.nodes[0]].url + '</a>';
                         });
+
                     });
-
-
                 }
 
                 draw();
