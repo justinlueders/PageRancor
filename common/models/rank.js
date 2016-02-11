@@ -112,7 +112,7 @@ module.exports = function(Rank) {
                                 processedUrls.push(href);
                                 Rank.processUrl(href, data.terms).then(function (childNode) {
                                     console.log('processing Url ' + href);
-                                    if (!childNode || childNode.score <= 0) {
+                                    if (!childNode || childNode.score < data.minScore) {
                                         resolve(false);
                                         return;
                                     }

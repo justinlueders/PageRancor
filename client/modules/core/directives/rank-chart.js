@@ -13,7 +13,8 @@ angular.module('com.module.core')
                     dwTrailUrlId:"myTrail",
                     requester:"jabba",
                     urls:"http://localhost:3004/testsite",
-                    terms:"batman,robin"
+                    terms:"batman,robin",
+                    minScore:5
                 };
 
 
