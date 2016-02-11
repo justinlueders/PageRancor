@@ -2,6 +2,7 @@ var app = require('../../server/server'),
     path = require('path'),
     relativeUploadPath = '../../temp/',
     request = require('request'),
+    textract = require('textract'),
     Xray = require('x-ray'),
     x = Xray(),
     mkdirp = require('mkdirp');
@@ -153,6 +154,11 @@ module.exports = function(Rank) {
         })
     };
 
+    /*
+    indexjs line 165
+    var $ = html ? html.html ? html : cheerio.load(html) : null;
+    if (url && $) $ = absolutes(url, $);
+    return $;*/
     Rank.processUrl = function(url, terms){
         return new Promise(function(resolve){
             try{
@@ -161,18 +167,25 @@ module.exports = function(Rank) {
                     return;
                 }
                 x(url, 'body@html')(function(err, body){
-                    //score the body
-                    if(!body){
+                    if(err){
                         resolve(null);
                         return;
                     }
-                    console.log("scoring " + url);
-                    Rank.scoreBody(url,body,terms).then(function(node){
-                        resolve(node);
-                    }).catch(function(reason){
-                        console.log(JSON.stringify(reason));
+                    textract.fromBufferWithMime('text/html', new Buffer(body), function (err, text) {
+                        //score the body
+                        if(!text){
+                            resolve(null);
+                            return;
+                        }
+                        console.log("scoring " + url);
+                        Rank.scoreBody(url,text,terms).then(function(node){
+                            resolve(node);
+                        }).catch(function(reason){
+                            console.log(JSON.stringify(reason));
+                        })
                     })
-                })
+                });
+
             }
             catch (getError) {
                 console.log(getError);

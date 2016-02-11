@@ -20,6 +20,7 @@
     "multiparty": "^4.1.2",
     "request": "^2.67.0",
     "serve-favicon": "^2.0.1",
+    "textract": "^1.2.1",
     "x-ray": "^2.0.3"
   },
   "devDependencies": {
