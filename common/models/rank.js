@@ -264,7 +264,8 @@ module.exports = function(Rank) {
                 "extractor": true,
                 "value": true,
                   "nodes":true,
-                  "edges":true
+                  "edges":true,
+                  "finished":true
               }
           };
 
