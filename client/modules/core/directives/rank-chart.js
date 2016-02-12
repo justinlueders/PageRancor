@@ -14,7 +14,8 @@ angular.module('com.module.core')
                     requester:"jabba",
                     urls:"http://localhost:3004/testsite",
                     terms:"batman,robin",
-                    minScore:5
+                    minScore:5,
+                    maxNodes:10
                 };
 
 

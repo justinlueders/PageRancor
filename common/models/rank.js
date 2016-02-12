@@ -60,9 +60,7 @@ module.exports = function(Rank) {
     Rank.findTerms = function(term,body){
         return new Promise(function(resolve){
             var allowOverlapping = true;
-
             if (term.length <= 0) return (body.length + 1);
-
             var n = 0,
                 pos = 0,
                 step = allowOverlapping ? 1 : term.length;
@@ -80,22 +78,47 @@ module.exports = function(Rank) {
         })
     };
 
-    Rank.processSingle = function(data){
-        var nodes = [];
+    Rank.compareNodes = function(a,b){
+        if (a.score < b.score)
+            return -1;
+        else if (a.score > b.score)
+            return 1;
+        else
+            return 0;
+    };
+
+    Rank.filterNodes = function(maxNodes,rootNode, nodes){
+        var filteredNodes = nodes.sort(Rank.compareNodes);
+        var bestFilteredNodes = filteredNodes.slice(0,maxNodes-1);
+        bestFilteredNodes.splice(0,0,rootNode);
+        bestFilteredNodes.forEach(function(node,idx){
+            node.id = idx;
+        });
+        return bestFilteredNodes;
+    };
+
+    Rank.buildEdges = function(rootNode,nodes){
         var edges = [];
+        nodes.forEach(function(node,idx){
+            if(idx == 0){
+                return;
+            }
+            edges.push({'from': rootNode.id, 'to': node.id});
+        });
+        return edges;
+    };
+    Rank.processSingle = function(data){
+        var rootNode = null;
+        var nodes = [];
         var url = data.urls;
+        var processedUrls = [];
+
         console.log("process Single for " + url);
         return new Promise(function(resolve,reject){
             Rank.processUrl(url,data.terms).then(function(node){
                 console.log('processing Url ' + url);
-                var nodeIndex = nodes.push(node) -1;
-                node.id=nodeIndex;
-                node.label = node.score;
-                node.value = node.score;
-                var processedUrls = [];
+                rootNode = node;
                 processedUrls.push(url);
-
-                Rank.createOrUpdateRanking("Rancor!",nodes,data.dwTrailUrlId,data.requester,edges,false);
 
                 try {
                     x(url, 'body', ['a@href'])(function (err, hrefs) {
@@ -117,13 +140,7 @@ module.exports = function(Rank) {
                                         resolve(false);
                                         return;
                                     }
-                                    var childIndex = nodes.push(childNode) - 1;
-                                    childNode.id = childIndex;
-                                    childNode.label = childNode.score;
-                                    childNode.value = childNode.score;
-                                    edges.push({'from': 0, 'to': childIndex});
-
-                                    Rank.createOrUpdateRanking("Rancor!", nodes, data.dwTrailUrlId, data.requester, edges, false);
+                                    nodes.push(childNode);
                                     resolve(true);
                                 }).catch(function (reason) {
                                     console.log(JSON.stringify(reason));
@@ -132,12 +149,16 @@ module.exports = function(Rank) {
                             });
 
                         })).then(function () {
-                            Rank.createOrUpdateRanking("Rancor!", nodes, data.dwTrailUrlId, data.requester, edges, true);
+                            var finalNodes = Rank.filterNodes(data.maxNodes,rootNode, nodes);
+                            var finalEdges = Rank.buildEdges(rootNode,finalNodes);
+                            Rank.createOrUpdateRanking("Rancor!", finalNodes, data.dwTrailUrlId, data.requester, finalEdges, true);
                             resolve("processing finished cleanly!");
                         }).catch(function (reason) {
-                            Rank.createOrUpdateRanking("Rancor!", nodes, data.dwTrailUrlId, data.requester, edges, true);
                             console.log(JSON.stringify(reason));
                             resolve("processing finished with an error!");
+                            var finalNodes = Rank.filterNodes(data.maxNodes,rootNode, nodes);
+                            var finalEdges = Rank.buildEdges(rootNode,finalNodes);
+                            Rank.createOrUpdateRanking("Rancor!", finalNodes, data.dwTrailUrlId, data.requester, finalEdges, true);
                         });
                     });
                 }
@@ -182,6 +203,7 @@ module.exports = function(Rank) {
                             resolve(node);
                         }).catch(function(reason){
                             console.log(JSON.stringify(reason));
+                            resolve(null);
                         })
                     })
                 });
@@ -189,11 +211,11 @@ module.exports = function(Rank) {
             }
             catch (getError) {
                 console.log(getError);
+                resolve(null);
             }
 
         }).catch(function(reason){
             console.log(JSON.stringify(reason));
-            resolve(null);
         })
     };
 
@@ -210,6 +232,7 @@ module.exports = function(Rank) {
               resolve({"url":url,"score":score});
           }).catch(function(reason){
               console.log(JSON.stringify(reason));
+              resolve(null);
           })
       }).catch(function(reason){
           console.log(JSON.stringify(reason));

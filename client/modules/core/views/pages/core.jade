@@ -14,6 +14,8 @@ block content
                input#Terms.form-control(type='text', name='terms', placeholder='Enter comma separated terms' ng-model='request_model.terms')
                label(for='minScore') Minimum Score
                input#minScore.form-control(type='text', name='minScore', placeholder='minimum score' ng-model='request_model.minScore')
+               label(for='maxNodes') Maximum Nodes
+               input#maxNodes.form-control(type='text', name='maxNodes', placeholder='maximum nodes' ng-model='request_model.maxNodes')
             button.btn.btn-default(ng-click="submit()") Submit
          button(ng-click="load()").btn.btn-default Load
          br
