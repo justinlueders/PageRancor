@@ -115,6 +115,13 @@ module.exports = function(Rank) {
         var url = data.urls;
         var processedUrls = [];
 
+        x.timeout(3000);
+
+        if(data.timeout){
+            x.timeout(data.timeout);
+        }
+
+
         console.log("process Single for " + url);
         return new Promise(function(resolve,reject){
             Rank.processUrl(url,data.terms).then(function(node){
