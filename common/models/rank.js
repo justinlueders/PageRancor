@@ -92,6 +92,8 @@ module.exports = function(Rank) {
         var bestFilteredNodes = filteredNodes.slice(0,maxNodes-1);
         bestFilteredNodes.splice(0,0,rootNode);
         bestFilteredNodes.forEach(function(node,idx){
+            node.label = node.score;
+            node.value = node.score;
             node.id = idx;
         });
         return bestFilteredNodes;
