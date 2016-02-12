@@ -14,6 +14,7 @@ mkdirp(path.join(__dirname, relativeUploadPath), function (err) {
 });
 
 module.exports = function(Rank) {
+    Rank.postQueue = [];
     Rank.createOrUpdateRanking = function(name,nodes,dwTrailUrlId,requester, edges,finished){
         console.log("Creating rank!");
         var dwUrlRanking = app.models.DwUrlRanking;
@@ -115,19 +116,19 @@ module.exports = function(Rank) {
         var url = data.urls;
         var processedUrls = [];
 
-        x.timeout(3000);
+        /*x.timeout(3000);
 
         if(data.timeout){
             x.timeout(data.timeout);
         }
-
-
+*/
         console.log("process Single for " + url);
         return new Promise(function(resolve,reject){
             Rank.processUrl(url,data.terms).then(function(node){
                 console.log('processing Url ' + url);
                 rootNode = node;
                 processedUrls.push(url);
+                Rank.createOrUpdateRanking("Rancor!", [rootNode], data.dwTrailUrlId, data.requester, [], false);
 
                 try {
                     x(url, 'body', ['a@href'])(function (err, hrefs) {
@@ -137,8 +138,8 @@ module.exports = function(Rank) {
                         }
                         Promise.all(hrefs.map(function (href) {
                             return new Promise(function (resolve) {
-                                if (processedUrls.indexOf(href) != -1) {
-                                    console.log("ignoring duplicate url");
+                                if (processedUrls.indexOf(href) != -1 || !href) {
+                                    console.log("ignoring invalid url");
                                     resolve(false);
                                     return;
                                 }
@@ -162,12 +163,23 @@ module.exports = function(Rank) {
                             var finalEdges = Rank.buildEdges(rootNode,finalNodes);
                             Rank.createOrUpdateRanking("Rancor!", finalNodes, data.dwTrailUrlId, data.requester, finalEdges, true);
                             resolve("processing finished cleanly!");
+
+                            Rank.postQueue = Rank.postQueue.slice(1,Rank.postQueue.length);
+                            if(Rank.postQueue.length>0){
+                                Rank.processSingle(Rank.postQueue[0]);
+                            }
+
                         }).catch(function (reason) {
                             console.log(JSON.stringify(reason));
-                            resolve("processing finished with an error!");
                             var finalNodes = Rank.filterNodes(data.maxNodes,rootNode, nodes);
                             var finalEdges = Rank.buildEdges(rootNode,finalNodes);
                             Rank.createOrUpdateRanking("Rancor!", finalNodes, data.dwTrailUrlId, data.requester, finalEdges, true);
+                            resolve("processing finished with an error!");
+
+                            Rank.postQueue = Rank.postQueue.slice(1,Rank.postQueue.length);
+                            if(Rank.postQueue.length>0){
+                                Rank.processSingle(Rank.postQueue[0]);
+                            }
                         });
                     });
                 }
@@ -197,7 +209,7 @@ module.exports = function(Rank) {
                     return;
                 }
                 x(url, 'body@html')(function(err, body){
-                    if(err){
+                    if(err || !body){
                         resolve(null);
                         return;
                     }
@@ -263,11 +275,19 @@ module.exports = function(Rank) {
                 data = JSON.parse(data);
             }
 
+            if(Rank.postQueue.length > 0){
+                Rank.postQueue.length = 1;
+                Rank.postQueue.push(data);
+                cb(null,"queued");
+                return;
+            }
+
+            Rank.postQueue.push(data);
             Rank.processSingle(data).then(function(result){
                 console.log(result);
             });
 
-            cb(null,"success");
+            cb(null,"processing");
             return;
         }
         catch (getError) {

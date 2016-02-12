@@ -15,7 +15,8 @@ angular.module('com.module.core')
                     urls:"http://localhost:3004/testsite",
                     terms:"batman,robin",
                     minScore:5,
-                    maxNodes:10
+                    maxNodes:10,
+                    timeout:3000
                 };
 
 
