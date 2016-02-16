@@ -14,7 +14,9 @@ mkdirp(path.join(__dirname, relativeUploadPath), function (err) {
 });
 
 module.exports = function(Rank) {
+
     Rank.postQueue = [];
+
     Rank.createOrUpdateRanking = function(name,nodes,dwTrailUrlId,requester, edges,finished,urlCount, urlsProcessed){
         console.log("Creating rank!");
         var dwUrlRanking = app.models.DwUrlRanking;
@@ -141,7 +143,7 @@ module.exports = function(Rank) {
                             return;
                         }
                         var processed = 0;
-                        Rank.createOrUpdateRanking("Rancor!", [rootNode], data.dwTrailUrlId, data.requester, [], false, hrefs.length,remaining);
+                        Rank.createOrUpdateRanking("Rancor!", [rootNode], data.dwTrailUrlId, data.requester, [], false, hrefs.length,processed);
 
                         Promise.all(hrefs.map(function (href) {
                             return new Promise(function (resolve) {
@@ -166,6 +168,7 @@ module.exports = function(Rank) {
                                 }).catch(function (reason) {
                                     console.log(JSON.stringify(reason));
                                     processed++;
+                                    Rank.createOrUpdateRanking("Rancor!", [rootNode], data.dwTrailUrlId, data.requester, [], false, hrefs.length,processed);
                                     resolve(false);
                                 });
                             });
@@ -182,11 +185,10 @@ module.exports = function(Rank) {
                             }
 
                         }).catch(function (reason) {
-                            console.log(JSON.stringify(reason));
                             var finalNodes = Rank.filterNodes(data.maxNodes,rootNode, nodes);
                             var finalEdges = Rank.buildEdges(rootNode,finalNodes);
                             Rank.createOrUpdateRanking("Rancor!", finalNodes, data.dwTrailUrlId, data.requester, finalEdges, true, hrefs.length,processed);
-                            resolve("processing finished with an error!");
+                            resolve("processing finished with an error!" + JSON.stringify(reason));
 
                             Rank.postQueue = Rank.postQueue.slice(1,Rank.postQueue.length);
                             if(Rank.postQueue.length>0){
