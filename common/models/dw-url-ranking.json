@@ -34,6 +34,14 @@
     "finished":{
       "type": "boolean",
       "default": false
+    },
+    "urlCount":{
+      "type": "number",
+      "default": 0
+    },
+    "urlsProcessed":{
+      "type": "number",
+      "default": 0
     }
   },
   "validations": [],
