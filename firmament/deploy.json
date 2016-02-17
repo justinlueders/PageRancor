@@ -1,44 +1,44 @@
-  1 [
-  2 {
-  3     "name": "rancor",
-  4     "Image": "jreeme/strongloop:12",
-  5     "DockerFilePath": "docker/strong-pm",
-  6     "Hostname": "rancor",
-  7     "ExposedPorts": {
-  8       "3001/tcp": {}
-  9     },
- 10     "HostConfig": {
- 11       "PortBindings": {
- 12         "3001/tcp": [
- 13           {
- 14             "HostPort": "3004"
- 15           }
- 16         ],
- 17         "8701/tcp": [
- 18           {
- 19             "HostPort": "8701"
- 20           }
- 21         ]
- 22       }
- 23     },
- 24     "ExpressApps": [
- 25       {
- 26         "GitUrl": "https://github.com/justinlueders/PageRancor.git",
- 27         "GitSrcBranchName": "master",
- 28         "StrongLoopBranchName": "deploy",
- 29         "StrongLoopServerUrl": "http://localhost:8701",
- 30         "ServiceName": "DatawakeRancor",
- 31         "Scripts":[
- 32           {
- 33             "RelativeWorkingDir":".",
- 34             "Command": "bower",
- 35             "Args":[
- 36               "install",
- 37               "--config.interactive=false"
- 38             ]
- 39           }
- 40         ]
- 41       }
- 42     ]
- 43   }
- 44 ]
+ [
+  {
+     "name": "rancor",
+     "Image": "jreeme/strongloop:12",
+     "DockerFilePath": "docker/strong-pm",
+     "Hostname": "rancor",
+     "ExposedPorts": {
+       "3001/tcp": {}
+     },
+     "HostConfig": {
+       "PortBindings": {
+         "3001/tcp": [
+           {
+             "HostPort": "3004"
+           }
+         ],
+         "8701/tcp": [
+           {
+             "HostPort": "8701"
+           }
+         ]
+       }
+     },
+     "ExpressApps": [
+       {
+         "GitUrl": "https://github.com/justinlueders/PageRancor.git",
+         "GitSrcBranchName": "master",
+         "StrongLoopBranchName": "deploy",
+         "StrongLoopServerUrl": "http://localhost:8701",
+         "ServiceName": "DatawakeRancor",
+         "Scripts":[
+           {
+             "RelativeWorkingDir":".",
+             "Command": "bower",
+             "Args":[
+               "install",
+               "--config.interactive=false"
+             ]
+           }
+         ]
+       }
+     ]
+   }
+ ]
