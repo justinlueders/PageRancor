@@ -7,6 +7,15 @@
     "validateUpsert": true
   },
   "properties": {},
+  "uniqueRequesterUrl": {
+    "keys":{
+      "requester": 1,
+      "dwTrailUrlId": 1
+    },
+    "options": {
+      "unique": true
+    }
+  },
   "validations": [],
   "relations": {},
   "acls": [],

@@ -1175,48 +1175,6 @@ module.factory(
 
         /**
          * @ngdoc method
-         * @name lbServices.Rank#processLookAhead
-         * @methodOf lbServices.Rank
-         *
-         * @description
-         *
-         * <em>
-         * (The remote method definition does not provide any description.)
-         * </em>
-         *
-         * @param {Object=} parameters Request parameters.
-         *
-         *   This method does not accept any parameters.
-         *   Supply an empty object or omit this argument altogether.
-         *
-         * @param {Object} postData Request data.
-         *
-         *  - `req` – `{object=}` - 
-         *
-         *  - `res` – `{object=}` - 
-         *
-         * @param {function(Object,Object)=} successCb
-         *   Success callback with two arguments: `value`, `responseHeaders`.
-         *
-         * @param {function(Object)=} errorCb Error callback with one argument:
-         *   `httpResponse`.
-         *
-         * @returns {Object} An empty reference that will be
-         *   populated with the actual data once the response is returned
-         *   from the server.
-         *
-         * <em>
-         * (The remote method definition does not provide any description.
-         * This usually means the response is a `Rank` object.)
-         * </em>
-         */
-        "processLookAhead": {
-          url: urlBase + "/rank/look_ahead",
-          method: "POST"
-        },
-
-        /**
-         * @ngdoc method
          * @name lbServices.Rank#processGet
          * @methodOf lbServices.Rank
          *
@@ -2034,18 +1992,6 @@ module
      */
     this.setUrlBase = function(url) {
       urlBase = url;
-    };
-
-    /**
-     * @ngdoc method
-     * @name lbServices.LoopBackResourceProvider#getUrlBase
-     * @methodOf lbServices.LoopBackResourceProvider
-     * @description
-     * Get the URL of the REST API server. The URL provided
-     * to the code generator (`lb-ng` or `grunt-loopback-sdk-angular`) is used.
-     */
-    this.getUrlBase = function() {
-      return urlBase;
     };
 
     this.$get = ['$resource', function($resource) {

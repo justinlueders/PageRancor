@@ -46,6 +46,10 @@ module.exports = function(Rank) {
                 return;
             }
 
+            if(item.finished && !finished){
+                return;
+            }
+
             dwUrlRanking.upsert({
                 "id":item.id,
                 "nodes": nodes,
@@ -100,7 +104,7 @@ module.exports = function(Rank) {
     Rank.buildEdges = function(rootNode,nodes){
         var edges = [];
         nodes.forEach(function(node,idx){
-            if(idx == 0){
+            if(idx == 0){[0]
                 return;
             }
             edges.push({'from': rootNode.id, 'to': node.id});
@@ -108,17 +112,20 @@ module.exports = function(Rank) {
         return edges;
     };
     Rank.processSingle = function(data){
+        var dwUrlRanking = app.models.DwUrlRanking;
         var rootNode = null;
         var nodes = [];
         var url = data.urls;
         var processedUrls = [];
 
-        /*x.timeout(3000);
+        x.timeout(10000);
 
         if(data.timeout){
             x.timeout(data.timeout);
         }
-*/
+
+        dwUrlRanking.destroyAll({"requester": data.requester});
+
         console.log("process Single for " + url);
         return new Promise(function(resolve,reject){
             Rank.processUrl(url,data.terms).then(function(node){
@@ -131,6 +138,12 @@ module.exports = function(Rank) {
                     x(url, 'body', ['a@href'])(function (err, hrefs) {
                         if (!hrefs) {
                             reject("No other urls found.");
+                            Rank.createOrUpdateRanking("Rancor!", [rootNode], data.dwTrailUrlId, data.requester, [], true, 0,0);
+                            Rank.postQueue = Rank.postQueue.slice(1,Rank.postQueue.length);
+                            if(Rank.postQueue.length>0){
+                                Rank.processSingle(Rank.postQueue[0]);
+                            }
+                            resolve(false);
                             return;
                         }
                         var processed = 0;
@@ -139,7 +152,7 @@ module.exports = function(Rank) {
                         Promise.all(hrefs.map(function (href) {
                             return new Promise(function (resolve) {
                                 if (processedUrls.indexOf(href) != -1 || !href) {
-                                    console.log("ignoring invalid url");
+                                    console.log("ignoring invalid url: " + href);
                                     processed++;
                                     resolve(false);
                                     return;
@@ -197,7 +210,7 @@ module.exports = function(Rank) {
                 console.log(JSON.stringify(reason));
             })
         }).catch(function(reason){
-            console.log(JSON.stringify(reason));
+            console.log(JSON.stringify(reason));//dwUrlRanking.destroyAll({"requester": requester});
         })
     };
 
@@ -209,7 +222,7 @@ module.exports = function(Rank) {
     Rank.processUrl = function(url, terms){
         return new Promise(function(resolve){
             try{
-                if(url.indexOf("mailto") >=0){
+                if(!Rank.validateUrl(url)){
                     resolve(null);
                     return;
                 }
@@ -265,14 +278,24 @@ module.exports = function(Rank) {
       })
     };
 
+    Rank.validateUrl = function(url){
+        return !(!url || url.length === 0 || url.indexOf("http") != 0 || url.indexOf("mailto") >=0);
+    };
+
     Rank.processPost = function(req,res, cb) {
         console.log("Rancor says: RAAWWWRRRR (got some data)");
         try {
             var data =req.body;
             data.terms = data.terms.split(',');
 
-            if(!data||data.urls[0]==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
+            if(!data||data.urls==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
                 cb(null,"error: missing input, please fill out the entire form.");
+                return;
+            }
+
+            if(! Rank.validateUrl(data.urls)){
+                cb(null,"error: Invalid Url sent to Rancor. "+ data.urls);
+                console.log("Invalid Url sent to Rancor. " + data.urls);
                 return;
             }
 
@@ -343,7 +366,7 @@ module.exports = function(Rank) {
             //dwUrlRanking.destroyAll({"requester": requester});
             //pull data from database and send back
             res.status(200).send(items);
-            console.log('Rancor:' + requester + ' escaped!');
+            console.log('Rancor:' + requester + ' requested results.');
           });
 
         }
