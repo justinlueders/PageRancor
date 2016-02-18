@@ -85,17 +85,8 @@ module.exports = function(Rank) {
         })
     };
 
-    Rank.compareNodes = function(a,b){
-        if (a.score < b.score)
-            return -1;
-        else if (a.score > b.score)
-            return 1;
-        else
-            return 0;
-    };
-
     Rank.filterNodes = function(maxNodes,rootNode, nodes){
-        var filteredNodes = nodes.sort(Rank.compareNodes);
+        var filteredNodes = nodes.sort(function(a, b){return b.score - a.score});
         var bestFilteredNodes = filteredNodes.slice(0,maxNodes-1);
         bestFilteredNodes.splice(0,0,rootNode);
         bestFilteredNodes.forEach(function(node,idx){
