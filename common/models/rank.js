@@ -126,8 +126,6 @@ module.exports = function(Rank) {
 
         dwUrlRanking.destroyAll({"requester": data.requester});
 
-        if(!Rank.validateUrl(url)){
-                   
         console.log("process Single for " + url);
         return new Promise(function(resolve,reject){
             Rank.processUrl(url,data.terms).then(function(node){
@@ -214,9 +212,6 @@ module.exports = function(Rank) {
         }).catch(function(reason){
             console.log(JSON.stringify(reason));//dwUrlRanking.destroyAll({"requester": requester});
         })
-        }else{
-            console.log("Invalid Url sent to Rancor. " + url);    
-        }
     };
 
     /*
