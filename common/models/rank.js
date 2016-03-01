@@ -151,7 +151,7 @@ module.exports = function(Rank) {
 
                         Promise.all(hrefs.map(function (href) {
                             return new Promise(function (resolve) {
-                                if (!href || processedUrls.indexOf(href) != -1) {
+                                if(!Rank.validateUrl(href) || processedUrls.indexOf(href) != -1) {
                                     console.log("ignoring invalid url: " + href);
                                     processed++;
                                     resolve(false);
