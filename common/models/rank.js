@@ -279,7 +279,21 @@ module.exports = function(Rank) {
     };
 
     Rank.validateUrl = function(url){
-        return !(!url || url.length === 0 || url.indexOf("http") != 0 || url.indexOf("mailto") >=0);
+        if(!url || url.length ===0){
+            return false;
+        }
+
+        var lowerUrl = string.toLowerCase();
+
+        if(lowerUrl.indexOf("http")!= 0){
+            return false;
+        }
+
+        if(lowerUrl.indexOf("mailto")>=0){
+            return false;
+        }
+
+        return true;
     };
 
     Rank.processPost = function(req,res, cb) {
