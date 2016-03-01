@@ -1,4 +1,28 @@
  [
+   {
+     "name": "data-container",
+     "Image": "lukewendling\/data-container:1",
+     "DockerFilePath": "",
+     "Hostname": "data-container"
+   },
+   {
+     "name": "mongo",
+     "Image": "jreeme\/mongo:2.6",
+     "DockerFilePath": "docker\/mongo\/2.6",
+     "Hostname": "mongo",
+     "HostConfig": {
+       "VolumesFrom": [
+         "data-container"
+       ],
+       "PortBindings": {
+         "27017\/tcp": [
+           {
+             "HostPort": "27017"
+           }
+         ]
+       }
+     }
+   },
   {
      "name": "rancor",
      "Image": "jreeme/strongloop:12",
@@ -8,6 +32,9 @@
        "3001/tcp": {}
      },
      "HostConfig": {
+       "Links": [
+         "mongo:mongo"
+       ],
        "PortBindings": {
          "3001/tcp": [
            {
