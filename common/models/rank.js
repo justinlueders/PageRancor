@@ -151,7 +151,7 @@ module.exports = function(Rank) {
 
                         Promise.all(hrefs.map(function (href) {
                             return new Promise(function (resolve) {
-                                if (processedUrls.indexOf(href) != -1 || !href) {
+                                if (!href || processedUrls.indexOf(href) != -1) {
                                     console.log("ignoring invalid url: " + href);
                                     processed++;
                                     resolve(false);
@@ -283,7 +283,7 @@ module.exports = function(Rank) {
             return false;
         }
 
-        var lowerUrl = string.toLowerCase();
+        var lowerUrl = url.toLowerCase();
 
         if(lowerUrl.indexOf("http")!= 0){
             return false;
