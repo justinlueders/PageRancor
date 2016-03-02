@@ -18,6 +18,8 @@ block content
                input#maxNodes.form-control(type='number', name='maxNodes', placeholder='maximum nodes' ng-model='request_model.maxNodes')
                label(for='timeout') Timeout for each request
                input#timeout.form-control(type='number', name='timeout', placeholder='request timeout' ng-model='request_model.timeout')
+               label(for='ignoreCache') Ignore Cached data..always re-ranc
+               input#ignoreCache.form-control(type='checkbox', name='ignoreCache', ng-model='request_model.ignoreCache')
             button.btn.btn-default(ng-click="submit()") Submit
          button(ng-click="load()").btn.btn-default Load
          br

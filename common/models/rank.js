@@ -296,6 +296,19 @@ module.exports = function(Rank) {
         return true;
     };
 
+    Rank.doRancing = function(data){
+        if(Rank.postQueue.length > 0){
+            Rank.postQueue.length = 1;
+            Rank.postQueue.push(data);
+            return;
+        }
+
+        Rank.postQueue.push(data);
+        Rank.processSingle(data).then(function(result){
+            console.log(result);
+        });
+    };
+
     Rank.processPost = function(req,res, cb) {
         console.log("Rancor says: RAAWWWRRRR (got some data)");
         try {
@@ -317,19 +330,24 @@ module.exports = function(Rank) {
                 data = JSON.parse(data);
             }
 
-            if(Rank.postQueue.length > 0){
-                Rank.postQueue.length = 1;
-                Rank.postQueue.push(data);
-                cb(null,"queued");
+            cb(null,"processing");
+
+            if(data.ignoreCache){
+                Rank.doRancing(data);
                 return;
             }
 
-            Rank.postQueue.push(data);
-            Rank.processSingle(data).then(function(result){
-                console.log(result);
+            Rank.getRankingByRequester(data.requester).then(function(items){
+                if(items && items.length != 0) {
+                    return;
+                }
+
+                Rank.doRancing(data);
+
+            },function(reason){
+                console.log(reason);
             });
 
-            cb(null,"processing");
             return;
         }
         catch (getError) {
@@ -352,42 +370,56 @@ module.exports = function(Rank) {
         }
     );
 
+    Rank.getRankingByRequester = function(requester){
+
+        return new Promise(function(resolve,reject){
+            var dwUrlRanking = app.models.DwUrlRanking;
+
+            try {
+                var whereClause={
+                    where: {
+                        requester: requester
+                    },
+                    fields:{
+                        "dwTrailUrlId": true,
+                        "extractor": true,
+                        "value": true,
+                        "nodes":true,
+                        "edges":true,
+                        "finished":true
+                    }
+                };
+
+                dwUrlRanking.find(whereClause, function(err, items){
+                    //dwUrlRanking.destroyAll({"requester": requester});
+                    //pull data from database and send back
+                    resolve(items);
+                    console.log('Rancor:' + requester + ' requested results.');
+                });
+
+            }
+            catch (getError) {
+                reject(getError.message);
+                console.log(getError.message)
+            }
+        }).catch(function(reason){
+            console.log(JSON.stringify(reason));
+        })
+    };
+
     Rank.processGet = function(req,res, cb) {
 
-        var dwUrlRanking = app.models.DwUrlRanking;
         var requester = req.query.requester;
 
         if(!requester){
             res.status(404).send("requester is empty");
         }
 
-        try {
-          var whereClause={
-              where: {
-                  requester: requester
-              },
-              fields:{
-                "dwTrailUrlId": true,
-                "extractor": true,
-                "value": true,
-                  "nodes":true,
-                  "edges":true,
-                  "finished":true
-              }
-          };
-
-          dwUrlRanking.find(whereClause, function(err, items){
-            //dwUrlRanking.destroyAll({"requester": requester});
-            //pull data from database and send back
+        Rank.getRankingByRequester(requester).then(function(items){
             res.status(200).send(items);
-            console.log('Rancor:' + requester + ' requested results.');
-          });
-
-        }
-        catch (getError) {
-          res.status(500).send(getError.message);
-          console.log(getError.message)
-        }
+        },function(reason){
+            res.status(404).send(reason);
+        });
     };
 
     Rank.remoteMethod(

@@ -16,7 +16,8 @@ angular.module('com.module.core')
                     terms:"batman,robin",
                     minScore:5,
                     maxNodes:10,
-                    timeout:3000
+                    timeout:3000,
+                    ignoreCache:true
                 };
 
 
@@ -41,6 +42,9 @@ angular.module('com.module.core')
                 function draw() {
                     destroy();
                     $http.get("/api/rank/process",{params:$scope.request_model}).success(function(result) {
+                        if(!result || result.length ==0){
+                            return;
+                        }
                         data = {nodes: result[0].nodes, edges: result[0].edges};
                         var options = {
                             layout: {
