@@ -329,7 +329,13 @@ module.exports = function(Rank) {
         console.log("Rancor says: RAAWWWRRRR (got some data)");
         try {
             var data =req.body;
+
+            if(typeof data == 'string'){
+                data = JSON.parse(data);
+            }
+
             data.terms = data.terms.split(',');
+                       
 
             if(!data||data.urls==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
                 cb(null,"error: missing input, please fill out the entire form.");
@@ -340,10 +346,6 @@ module.exports = function(Rank) {
                 cb(null,"error: Invalid Url sent to Rancor. "+ data.urls);
                 console.log("Invalid Url sent to Rancor. " + data.urls);
                 return;
-            }
-
-            if(typeof data == 'string'){
-                data = JSON.parse(data);
             }
 
             cb(null,"processing");
