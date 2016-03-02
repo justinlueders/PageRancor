@@ -331,6 +331,16 @@ module.exports = function(Rank) {
         });
     };
 
+    Array.prototype.clean = function(deleteValue) {
+        for (var i = 0; i < this.length; i++) {
+            if (this[i] == deleteValue) {
+                this.splice(i, 1);
+                i--;
+            }
+        }
+        return this;
+    };
+
     Rank.processPost = function(req,res, cb) {
         console.log("Rancor says: RAAWWWRRRR (got some data)");
         try {
@@ -347,6 +357,7 @@ module.exports = function(Rank) {
             }
 
             data.terms = data.terms.split(',');
+            data.terms.clean('');
 
 
             if(!data||data.urls==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
