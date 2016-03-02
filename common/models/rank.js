@@ -232,29 +232,35 @@ module.exports = function(Rank) {
                     timeout: xTimeout
                 }, function (error, response, body) {
                     if (response) {
-                        x(body,'body@html')(function(err, body){
-                            if(err || !body){
-                                resolve({"url":url,"score":0});
-                                if(err) {
-                                    console.log(url + ' finished with error: ' + err.message);
-                                }
-                                return;
-                            }
-                            textract.fromBufferWithMime('text/html', new Buffer(body), function (err, text) {
-                                //score the body
-                                if(!text){
-                                    resolve({"url":url,"score":0});
+                        try {
+                            x(body, 'body@html')(function (err, body) {
+                                if (err || !body) {
+                                    resolve({"url": url, "score": 0});
+                                    if (err) {
+                                        console.log(url + ' finished with error: ' + err.message);
+                                    }
                                     return;
                                 }
-                                console.log("scoring " + url);
-                                Rank.scoreBody(url,text,terms).then(function(node){
-                                    resolve(node);
-                                }).catch(function(reason){
-                                    console.log(JSON.stringify(reason));
-                                    resolve({"url":url,"score":0});
+                                textract.fromBufferWithMime('text/html', new Buffer(body), function (err, text) {
+                                    //score the body
+                                    if (!text) {
+                                        resolve({"url": url, "score": 0});
+                                        return;
+                                    }
+                                    console.log("scoring " + url);
+                                    Rank.scoreBody(url, text, terms).then(function (node) {
+                                        resolve(node);
+                                    }).catch(function (reason) {
+                                        console.log(JSON.stringify(reason));
+                                        resolve({"url": url, "score": 0});
+                                    })
                                 })
-                            })
-                        });
+                            });
+                        }
+                        catch(err){
+                            resolve({"url": url, "score": 0});
+                            console.log('xray-puked');
+                        }
                     }
                     else if (error) {
                         resolve({"url":url,"score":0});
@@ -335,7 +341,7 @@ module.exports = function(Rank) {
             }
 
             data.terms = data.terms.split(',');
-                       
+
 
             if(!data||data.urls==''||data.terms[0]==''||!data.dwTrailUrlId||!data.requester){
                 cb(null,"error: missing input, please fill out the entire form.");
