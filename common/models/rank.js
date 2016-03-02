@@ -373,7 +373,8 @@ module.exports = function(Rank) {
 
             cb(null,"processing");
 
-            if(data.ignoreCache){
+            //we are always going to ranc for now
+            if(true){//data.ignoreCache){
                 Rank.doRancing(data);
                 return;
             }
