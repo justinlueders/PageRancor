@@ -5,6 +5,7 @@ var app = require('../../server/server'),
     textract = require('textract'),
     Xray = require('x-ray'),
     x = Xray(),
+    xTimeout = 10000,
     mkdirp = require('mkdirp');
 
 mkdirp(path.join(__dirname, relativeUploadPath), function (err) {
@@ -118,10 +119,8 @@ module.exports = function(Rank) {
         var url = data.urls;
         var processedUrls = [];
 
-        x.timeout(10000);
-
         if(data.timeout){
-            x.timeout(data.timeout);
+            xTimeout = data.timeout;
         }
 
         dwUrlRanking.destroyAll({"requester": data.requester});
@@ -139,11 +138,13 @@ module.exports = function(Rank) {
                         if (!hrefs) {
                             reject("No other urls found.");
                             Rank.createOrUpdateRanking("Rancor!", [rootNode], data.dwTrailUrlId, data.requester, [], true, 0,0);
+                            resolve(false);
+
                             Rank.postQueue = Rank.postQueue.slice(1,Rank.postQueue.length);
                             if(Rank.postQueue.length>0){
                                 Rank.processSingle(Rank.postQueue[0]);
                             }
-                            resolve(false);
+
                             return;
                         }
                         var processed = 0;
@@ -223,34 +224,49 @@ module.exports = function(Rank) {
         return new Promise(function(resolve){
             try{
                 if(!Rank.validateUrl(url)){
-                    resolve(null);
+                    resolve({"url":url,"score":0});
                     return;
                 }
-                x(url, 'body@html')(function(err, body){
-                    if(err || !body){
-                        resolve(null);
-                        return;
+                request({
+                    url: url,
+                    timeout: xTimeout
+                }, function (error, response, body) {
+                    if (response) {
+                        x(body,'body@html')(function(err, body){
+                            if(err || !body){
+                                resolve({"url":url,"score":0});
+                                if(err) {
+                                    console.log(url + ' finished with error: ' + err.message);
+                                }
+                                return;
+                            }
+                            textract.fromBufferWithMime('text/html', new Buffer(body), function (err, text) {
+                                //score the body
+                                if(!text){
+                                    resolve({"url":url,"score":0});
+                                    return;
+                                }
+                                console.log("scoring " + url);
+                                Rank.scoreBody(url,text,terms).then(function(node){
+                                    resolve(node);
+                                }).catch(function(reason){
+                                    console.log(JSON.stringify(reason));
+                                    resolve({"url":url,"score":0});
+                                })
+                            })
+                        });
                     }
-                    textract.fromBufferWithMime('text/html', new Buffer(body), function (err, text) {
-                        //score the body
-                        if(!text){
-                            resolve(null);
-                            return;
-                        }
-                        console.log("scoring " + url);
-                        Rank.scoreBody(url,text,terms).then(function(node){
-                            resolve(node);
-                        }).catch(function(reason){
-                            console.log(JSON.stringify(reason));
-                            resolve(null);
-                        })
-                    })
+                    else if (error) {
+                        resolve({"url":url,"score":0});
+                        console.log(error);
+                    }
                 });
+
 
             }
             catch (getError) {
                 console.log(getError);
-                resolve(null);
+                resolve({"url":url,"score":0});
             }
 
         }).catch(function(reason){
@@ -271,7 +287,7 @@ module.exports = function(Rank) {
               resolve({"url":url,"score":score});
           }).catch(function(reason){
               console.log(JSON.stringify(reason));
-              resolve(null);
+              resolve({"url":url,"score":0});
           })
       }).catch(function(reason){
           console.log(JSON.stringify(reason));
@@ -432,6 +448,27 @@ module.exports = function(Rank) {
       returns: {arg: 'data', root:true},
       http: {path: '/process',verb: 'get'}
     });
+
+    Rank.delay = function(req,res, cb) {
+
+        var delay = req.query.delay;
+
+        setTimeout(function(){
+            res.status(200).send("Waited " + delay );
+        },delay);
+
+    };
+
+    Rank.remoteMethod(
+        'delay',
+        {
+            accepts: [
+                {arg: 'req', type: 'object', 'http': {source: 'req'}},
+                {arg: 'res', type: 'object', 'http': {source: 'res'}}
+            ],
+            returns: {arg: 'data', root:true},
+            http: {path: '/delay',verb: 'get'}
+        });
 
     Rank.destroyData = function(req,res, cb) {
 
