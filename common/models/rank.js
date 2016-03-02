@@ -336,6 +336,12 @@ module.exports = function(Rank) {
         try {
             var data =req.body;
 
+            console.log("_________________________");
+            console.log("Got a post!");
+            console.log(data);
+            console.log("_________________________");
+
+
             if(typeof data == 'string'){
                 data = JSON.parse(data);
             }
