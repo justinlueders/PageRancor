@@ -1,6 +1,6 @@
 {
   "name": "PageRancor",
-  "description": "RAWWRRR",
+  "description": "Test Site",
   "main": "server/server.js",
   "authors": [
     "Justin <justin.lueders@gmail.com>"
